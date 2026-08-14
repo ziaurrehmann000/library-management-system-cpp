@@ -5,6 +5,8 @@
 #include "Member.h"
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 class Library {
@@ -14,19 +16,16 @@ private:
 
 public:
 
-    // Add a new book
     void addBook(Book book) {
         books.push_back(book);
         cout << "Book added successfully.\n";
     }
 
-    // Add a new member
     void addMember(Member member) {
         members.push_back(member);
         cout << "Member added successfully.\n";
     }
 
-    // Display all books
     void displayBooks() const {
         cout << "\n========== BOOK LIST ==========\n";
 
@@ -45,12 +44,9 @@ public:
         }
     }
 
-    // Search for a book
     void searchBook(int id) const {
         for (const Book& book : books) {
-
             if (book.getId() == id) {
-
                 cout << "\n========== BOOK FOUND ==========\n";
                 cout << "ID: " << book.getId() << endl;
                 cout << "Title: " << book.getTitle() << endl;
@@ -58,7 +54,6 @@ public:
                 cout << "Status: "
                      << (book.isAvailable() ? "Available" : "Issued")
                      << endl;
-
                 return;
             }
         }
@@ -66,20 +61,15 @@ public:
         cout << "Book not found.\n";
     }
 
-    // Issue a book
     void issueBook(int id) {
-
         for (Book& book : books) {
-
             if (book.getId() == id) {
-
                 if (!book.isAvailable()) {
                     cout << "Book is already issued.\n";
                     return;
                 }
 
                 book.issueBook();
-
                 cout << "Book issued successfully.\n";
                 return;
             }
@@ -88,20 +78,15 @@ public:
         cout << "Book not found.\n";
     }
 
-    // Return a book
     void returnBook(int id) {
-
         for (Book& book : books) {
-
             if (book.getId() == id) {
-
                 if (book.isAvailable()) {
                     cout << "Book is already available.\n";
                     return;
                 }
 
                 book.returnBook();
-
                 cout << "Book returned successfully.\n";
                 return;
             }
@@ -110,9 +95,7 @@ public:
         cout << "Book not found.\n";
     }
 
-    // Display all members
     void displayMembers() const {
-
         cout << "\n========== MEMBER LIST ==========\n";
 
         if (members.empty()) {
@@ -121,7 +104,6 @@ public:
         }
 
         for (const Member& member : members) {
-
             cout << "Member ID: "
                  << member.getMemberId()
                  << " | Name: "
@@ -130,6 +112,119 @@ public:
         }
     }
 
+    void saveBooks() const {
+        ofstream file("data/books.txt");
+
+        if (!file) {
+            cout << "Error: Could not save books.\n";
+            return;
+        }
+
+        for (const Book& book : books) {
+            file << book.getId() << "|"
+                 << book.getTitle() << "|"
+                 << book.getAuthor() << "|"
+                 << book.isAvailable() << "\n";
+        }
+
+        file.close();
+    }
+
+    void loadBooks() {
+        ifstream file("data/books.txt");
+
+        if (!file) {
+            return;
+        }
+
+        string line;
+
+        while (getline(file, line)) {
+            stringstream ss(line);
+
+            string idStr, title, author, availableStr;
+
+            getline(ss, idStr, '|');
+            getline(ss, title, '|');
+            getline(ss, author, '|');
+            getline(ss, availableStr, '|');
+
+            if (idStr.empty()) {
+                continue;
+            }
+
+            int id = stoi(idStr);
+            bool available = (availableStr == "1");
+
+            Book book(id, title, author);
+
+            if (!available) {
+                book.issueBook();
+            }
+
+            books.push_back(book);
+        }
+
+        file.close();
+    }
+
+    void saveMembers() const {
+        ofstream file("data/members.txt");
+
+        if (!file) {
+            cout << "Error: Could not save members.\n";
+            return;
+        }
+
+        for (const Member& member : members) {
+            file << member.getMemberId()
+                 << "|"
+                 << member.getName()
+                 << "\n";
+        }
+
+        file.close();
+    }
+
+    void loadMembers() {
+        ifstream file("data/members.txt");
+
+        if (!file) {
+            return;
+        }
+
+        string line;
+
+        while (getline(file, line)) {
+            stringstream ss(line);
+
+            string idStr;
+            string name;
+
+            getline(ss, idStr, '|');
+            getline(ss, name, '|');
+
+            if (idStr.empty()) {
+                continue;
+            }
+
+            int id = stoi(idStr);
+
+            members.push_back(Member(id, name));
+        }
+
+        file.close();
+    }
+
+    void saveData() const {
+        saveBooks();
+        saveMembers();
+    }
+
+    void loadData() {
+        loadBooks();
+        loadMembers();
+    }
 };
 
 #endif

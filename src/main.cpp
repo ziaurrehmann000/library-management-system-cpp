@@ -6,7 +6,9 @@ using namespace std;
 int main() {
 
     Library library;
-
+    
+     library.loadData();
+    
     int choice;
 
     do {
@@ -111,6 +113,6 @@ int main() {
         }
 
     } while (choice != 8);
-
+        library.saveData();
     return 0;
 }
